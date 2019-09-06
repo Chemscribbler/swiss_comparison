@@ -38,7 +38,11 @@ class Tournament:
     def close_match(self, player1, player2):
         player1.curr_opp = None
         player2.curr_opp = None
-        self.pairing_list.remove((player1, player2))
+        new_pairing_list = []
+        for pair in self.pairing_list:
+            if player1.id != pair[0].id:
+                new_pairing_list.append(pair)
+        self.pairing_list = new_pairing_list
 
     def sim_game(self, sim1, sim2):
         rand = random.random()
@@ -79,12 +83,26 @@ class Tournament:
             if player.curr_opp is None:
                 # checks for valid match with players going down starting with player's position + rounds remaining
                 for i in range(rounds_remaining+playerRank, len(ranking)):
-                    if player.test_legal_pairing(ranking[i]):
+                    if player.test_legal_pairing(ranking[i]) and ranking[i].test_legal_pairing(player):
                         self.manage_pairing(player, ranking[i])
                         break
                     else:
                         i += 1
-                # if no legal lower opponent, set to -1, the bye
+                # If no lower opponent could be found want to find check list for a higher ranked option
+                if player.curr_opp is None:
+                    for i in range(0, playerRank + rounds_remaining - 1):
+                        # Want to start low, so invert the number
+                        check = playerRank - rounds_remaining - i
+                        if check <= len(ranking) and check != playerRank:
+                            if player.test_legal_pairing(ranking[i]) and ranking[check].test_legal_pairing(player):
+                                self.manage_pairing(player, ranking[check])
+                                break
+                            else:
+                                i += 1
+                        else:
+                            i += 1
+
+                # if no legal opponent, set to -1, the bye
                 if player.curr_opp is None:
                     player.curr_opp = -1
 
