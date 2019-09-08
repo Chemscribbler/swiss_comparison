@@ -1,3 +1,4 @@
+
 import random
 from operator import attrgetter
 
@@ -10,6 +11,11 @@ RUNNER_ID = ["Alice", "Ed", "Freedom", "MaxX", "Gnat",
              "419", "Andy", "Geist", "Az", "Gabe",
              "Akiko", "Ayla", "CT", "Smoke", "Exile",
              "Apex", "Adam", "Sunny"]
+
+
+def is_legal_pair(player1, player2):
+    return player1.test_legal_pairing(player2) and \
+        player2.test_legal_pairing(player1)
 
 
 class Tournament:
@@ -27,9 +33,9 @@ class Tournament:
 
     def gen_sim_players(self, number):
         for i in range(0, number):
-            corpNum = random.randint(0,19)
-            runnerNum = random.randint(0,17)
-            self.add_sim_player(chr(65+i),CORP_ID[corpNum],RUNNER_ID[runnerNum],random.random())
+            corp_num = random.randint(0, 19)
+            runner_num = random.randint(0, 17)
+            self.add_sim_player(chr(65+i), CORP_ID[corp_num], RUNNER_ID[runner_num], random.random())
 
     def game_result(self, winner_id, loser_id):
         self.player_dict[winner_id].win(loser_id)
@@ -83,7 +89,7 @@ class Tournament:
             if player.curr_opp is None:
                 # checks for valid match with players going down starting with player's position + rounds remaining
                 for i in range(rounds_remaining+playerRank, len(ranking)):
-                    if player.test_legal_pairing(ranking[i]) and ranking[i].test_legal_pairing(player):
+                    if is_legal_pair(player, ranking[i]):
                         self.manage_pairing(player, ranking[i])
                         break
                     else:
@@ -94,14 +100,14 @@ class Tournament:
                         # Want to start low, so invert the number
                         check = playerRank - rounds_remaining - i
                         if check <= len(ranking) and check != playerRank:
-                            if player.test_legal_pairing(ranking[i]) and ranking[check].test_legal_pairing(player):
+                            if is_legal_pair(player, ranking[i]):
                                 self.manage_pairing(player, ranking[check])
                                 break
                             else:
                                 i += 1
                         else:
                             i += 1
-
+                # TODO properly implement the bye as an opponent
                 # if no legal opponent, set to -1, the bye
                 if player.curr_opp is None:
                     player.curr_opp = -1
@@ -122,6 +128,9 @@ class Tournament:
             self.close_match(pair[0], pair[1])
         self.round_sos_calc()
 
+    def cut(self, number):
+        return self.rank_players()[-number:]
+
 
 class Player(Tournament):
     next_id = 0
@@ -137,14 +146,17 @@ class Player(Tournament):
         self.sos = 0
         self.ext_sos = 0
         self.opp_list = []
+        self.record = []
         self.curr_opp = None
 
     def win(self, opponent_id):
         self.score += 3
         self.opp_list.append(opponent_id)
+        self.record.append("W")
 
     def lose(self, opponent_id):
         self.opp_list.append(opponent_id)
+        self.record.append("L")
 
     def test_legal_pairing(self, opponent):
         if self.curr_opp is None and opponent.id not in self.opp_list:
@@ -159,4 +171,25 @@ class Sim(Player):
         self.strength = strength
         self.sim = True
 
+
+# TODO find bug where not everyone is playing the same number of opponents (also implement unit test)
+def run_tournament(player_count):
+    rounds = 3
+    if player_count > 9:
+        rounds += 1
+        if player_count > 32:
+            rounds += 1
+            if player_count > 56:
+                rounds += 1
+                if player_count > 80:
+                    rounds += 1
+                    if player_count > 128:
+                        rounds += 1
+    tournament = Tournament()
+    tournament.gen_sim_players(player_count)
+    while rounds > 1:
+        tournament.almafi_pairing(rounds)
+        tournament.sim_round()
+        rounds -= 1
+    return tournament
 

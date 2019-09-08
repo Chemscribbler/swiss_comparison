@@ -16,5 +16,13 @@ class TournamentTest(unittest.TestCase):
         self.assertEqual(test_player.name, 'b')
 
 
+class AutoSimTesting(unittest.TestCase):
+    # TODO write test to iterate over player counts & ensure opponents equal # of rounds*2
+    # TODO write test to ensure number of rounds is appropriate
+
+    def test_everyone_plays(self):
+        pass
+
+
 if __name__ == '__main__':
     unittest.main()
