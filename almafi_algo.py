@@ -18,6 +18,39 @@ def is_legal_pair(player1, player2):
         player2.test_legal_pairing(player1)
 
 
+def num_rounds(player_count, event_type="Competitive"):
+    rounds = 3
+    if event_type == "Competitive":
+        if player_count > 9:
+            rounds += 1
+            if player_count > 32:
+                rounds += 1
+                if player_count > 56:
+                    rounds += 1
+                    if player_count > 80:
+                        rounds += 1
+                        if player_count > 128:
+                            rounds += 1
+                            if player_count > 192:
+                                rounds += 1
+                                if player_count > 256:
+                                    rounds += 1
+    if event_type == "Casual":
+        if player_count > 11:
+            rounds += 1
+            if player_count > 15:
+                rounds += 1
+                if player_count > 32:
+                    rounds += 1
+                    if player_count > 64:
+                        rounds += 1
+                        if player_count > 96:
+                            rounds += 1
+                            if player_count > 128:
+                                rounds += 1
+    return rounds
+
+
 class Tournament:
     def __init__(self):
         self.player_dict = {}
@@ -132,11 +165,10 @@ class Tournament:
         return self.rank_players()[-number:]
 
 
-class Player(Tournament):
+class Player:
     next_id = 0
 
     def __init__(self, name, id_corp, id_run):
-        super().__init__()
         self.id = Player.next_id
         Player.next_id += 1
         self.name = name
@@ -173,23 +205,12 @@ class Sim(Player):
 
 
 # TODO find bug where not everyone is playing the same number of opponents (also implement unit test)
-def run_tournament(player_count):
-    rounds = 3
-    if player_count > 9:
-        rounds += 1
-        if player_count > 32:
-            rounds += 1
-            if player_count > 56:
-                rounds += 1
-                if player_count > 80:
-                    rounds += 1
-                    if player_count > 128:
-                        rounds += 1
+def run_sim_tournament(player_count, **kwargs):
     tournament = Tournament()
+    rounds = num_rounds(player_count, **kwargs)
     tournament.gen_sim_players(player_count)
-    while rounds > 1:
+    while rounds > 0:
         tournament.almafi_pairing(rounds)
         tournament.sim_round()
         rounds -= 1
     return tournament
-
