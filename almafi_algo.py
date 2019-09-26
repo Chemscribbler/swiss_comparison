@@ -1,6 +1,7 @@
 import playermodule
 import random
 from operator import attrgetter
+import csv
 
 CORP_ID = ["Argus", "Blue Sun", "Gagarin", "GRNDL", 'Jemison',
            'Acme', 'Azmari', 'Haarpsichord', 'Harischandra', 'CtM',
@@ -176,3 +177,14 @@ def run_sim_tournament(player_count, **kwargs):
         tournament.sim_round()
         rounds -= 1
     return tournament
+
+
+def multi_sim(sim_num, path="./data_out.csv", player_count=24):
+    with open(path, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        while sim_num > 0:
+            ranking_list = run_sim_tournament(player_count).rank_players()
+            for i in range(0,len(ranking_list)):
+                player = ranking_list[i]
+                csvwriter.writerow([i,player.strength])
+            sim_num -= 1
