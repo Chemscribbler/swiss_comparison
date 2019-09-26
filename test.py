@@ -1,6 +1,6 @@
 import unittest
 
-from almafi_algo import Player
+from playermodule import Player
 from almafi_algo import Tournament
 from almafi_algo import num_rounds
 

@@ -1,4 +1,4 @@
-
+import playermodule
 import random
 from operator import attrgetter
 
@@ -57,11 +57,11 @@ class Tournament:
         self.pairing_list = []
 
     def add_player(self, name, id_corp, id_run):
-        player = Player(name, id_corp, id_run)
+        player = playermodule.Player(name, id_corp, id_run)
         self.player_dict.update({player.id: player})
 
     def add_sim_player(self, name, id_corp, id_run, strength=0.5):
-        sim = Sim(name, id_corp, id_run, strength)
+        sim = playermodule.Sim(name, id_corp, id_run, strength)
         self.player_dict.update({sim.id: sim})
 
     def gen_sim_players(self, number):
@@ -133,7 +133,7 @@ class Tournament:
                         # Want to start low, so invert the number
                         check = playerRank - rounds_remaining - i
                         if check <= len(ranking) and check != playerRank:
-                            if is_legal_pair(player, ranking[i]):
+                            if is_legal_pair(player, ranking[check]):
                                 self.manage_pairing(player, ranking[check])
                                 break
                             else:
@@ -163,45 +163,6 @@ class Tournament:
 
     def cut(self, number):
         return self.rank_players()[-number:]
-
-
-class Player:
-    next_id = 0
-
-    def __init__(self, name, id_corp, id_run):
-        self.id = Player.next_id
-        Player.next_id += 1
-        self.name = name
-        self.id_corp = id_corp
-        self.id_run = id_run
-        self.score = 0
-        self.sos = 0
-        self.ext_sos = 0
-        self.opp_list = []
-        self.record = []
-        self.curr_opp = None
-
-    def win(self, opponent_id):
-        self.score += 3
-        self.opp_list.append(opponent_id)
-        self.record.append("W")
-
-    def lose(self, opponent_id):
-        self.opp_list.append(opponent_id)
-        self.record.append("L")
-
-    def test_legal_pairing(self, opponent):
-        if self.curr_opp is None and opponent.id not in self.opp_list:
-            return True
-        else:
-            return False
-
-
-class Sim(Player):
-    def __init__(self, name, corp_id, run_id, strength):
-        super().__init__(name, corp_id, run_id)
-        self.strength = strength
-        self.sim = True
 
 
 # TODO find bug where not everyone is playing the same number of opponents (also implement unit test)
