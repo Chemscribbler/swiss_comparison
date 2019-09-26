@@ -140,6 +140,7 @@ class Tournament:
                                 i += 1
                         else:
                             i += 1
+                # TODO implement un-pairing so that number of byes is minimized
                 # TODO properly implement the bye as an opponent
                 # if no legal opponent, set to -1, the bye
                 if player.curr_opp is None:

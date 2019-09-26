@@ -29,6 +29,8 @@ class Player:
         else:
             return False
 
+    def compute_should_id(self, rounds_left, ranking_list, pairing_list, cut_size):
+        pass
 
 class Sim(Player):
     def __init__(self, name, corp_id, run_id, strength):
