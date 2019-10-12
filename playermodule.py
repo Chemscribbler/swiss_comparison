@@ -1,5 +1,6 @@
 from utility_functions import cut_size
 from copy import deepcopy
+from operator import attrgetter
 
 
 class Player:
@@ -33,12 +34,17 @@ class Player:
         else:
             return False
 
-    def compute_should_id(self, tournament, round_num):
-        cut_count = cut_size(len(tournament.player_dict))
+    def compute_should_id(self, tourney, round_num):
+        cut_count = cut_size(len(tourney.player_dict))
+        score_list = [player.score for player in tourney.rank_players()]
+        cut_score = score_list[-cut_count]
         made_cut = 0.0
 
-        for i in range(0, 10000):
-            drawn_scenario = deepcopy(tournament)
+        if self.score + round_num*6 <= cut_score:
+            return 0.0
+
+        for i in range(0, 1000):
+            drawn_scenario = deepcopy(tourney)
             clone = drawn_scenario.player_dict[self.id]
             temp_round = round_num
             while temp_round > 0:
@@ -49,7 +55,7 @@ class Player:
             if clone.id in [player.id for player in drawn_scenario.cut(cut_count)]:
                 made_cut += 1.0
             i += 1
-        return made_cut/10000
+        return made_cut/1000
 
     def draw_round(self, tournament):
         for pair in tournament.pairing_list:

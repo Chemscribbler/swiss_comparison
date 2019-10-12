@@ -130,14 +130,3 @@ class Tournament:
 
     def cut(self, number):
         return self.rank_players()[-number:]
-
-
-def run_sim_tournament(player_count, **kwargs):
-    tournament = Tournament()
-    rounds = utility_functions.num_rounds(player_count, **kwargs)
-    tournament.gen_sim_players(player_count)
-    while rounds > 0:
-        tournament.almafi_pairing(rounds)
-        tournament.sim_round()
-        rounds -= 1
-    return tournament

@@ -1,3 +1,5 @@
+import tournament
+
 def is_legal_pair(player1, player2):
     return player1.test_legal_pairing(player2) and \
         player2.test_legal_pairing(player1)
@@ -53,3 +55,30 @@ def cut_size(player_count, event_type="Competitive"):
                 if player_count > 128:
                     cut_num += 8
     return cut_num
+
+
+def run_sim_tournament(player_count, **kwargs):
+    tt = tournament.Tournament()
+    rounds = num_rounds(player_count, **kwargs)
+    tt.gen_sim_players(player_count)
+    while rounds > 0:
+        tt.almafi_pairing(rounds)
+        tt.sim_round()
+        rounds -= 1
+    return tt
+
+
+def run_sim_partial(player_count, round_stop, **kwargs):
+    tourney = tournament.Tournament()
+    rounds = num_rounds(player_count, **kwargs)
+    tourney.gen_sim_players(player_count)
+    while rounds > round_stop:
+        tourney.almafi_pairing(rounds)
+        tourney.sim_round()
+        rounds -= 1
+    return tourney
+
+
+def check_id_prob(tourney, rounds_remaining):
+    for p in tourney.rank_players():
+        print("{} {} {} {}".format(p.id, p.score, p.sos, p.compute_should_id(tourney, rounds_remaining)))
