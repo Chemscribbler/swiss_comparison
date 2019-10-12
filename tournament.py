@@ -1,7 +1,7 @@
 import playermodule
 import random
+import utility_functions
 from operator import attrgetter
-import csv
 
 CORP_ID = ["Argus", "Blue Sun", "Gagarin", "GRNDL", 'Jemison',
            'Acme', 'Azmari', 'Haarpsichord', 'Harischandra', 'CtM',
@@ -12,44 +12,6 @@ RUNNER_ID = ["Alice", "Ed", "Freedom", "MaxX", "Gnat",
              "419", "Andy", "Geist", "Az", "Gabe",
              "Akiko", "Ayla", "CT", "Smoke", "Exile",
              "Apex", "Adam", "Sunny"]
-
-
-def is_legal_pair(player1, player2):
-    return player1.test_legal_pairing(player2) and \
-        player2.test_legal_pairing(player1)
-
-
-def num_rounds(player_count, event_type="Competitive"):
-    rounds = 3
-    if event_type == "Competitive":
-        if player_count > 9:
-            rounds += 1
-            if player_count > 32:
-                rounds += 1
-                if player_count > 56:
-                    rounds += 1
-                    if player_count > 80:
-                        rounds += 1
-                        if player_count > 128:
-                            rounds += 1
-                            if player_count > 192:
-                                rounds += 1
-                                if player_count > 256:
-                                    rounds += 1
-    if event_type == "Casual":
-        if player_count > 11:
-            rounds += 1
-            if player_count > 15:
-                rounds += 1
-                if player_count > 32:
-                    rounds += 1
-                    if player_count > 64:
-                        rounds += 1
-                        if player_count > 96:
-                            rounds += 1
-                            if player_count > 128:
-                                rounds += 1
-    return rounds
 
 
 class Tournament:
@@ -118,12 +80,15 @@ class Tournament:
         ranking = self.rank_players()
         self.pairing_list = []
 
+        if rounds_remaining < 1:
+            return None
+
         for playerRank in range(0, len(ranking)):
             player = ranking[playerRank]
             if player.curr_opp is None:
                 # checks for valid match with players going down starting with player's position + rounds remaining
                 for i in range(rounds_remaining+playerRank, len(ranking)):
-                    if is_legal_pair(player, ranking[i]):
+                    if utility_functions.is_legal_pair(player, ranking[i]):
                         self.manage_pairing(player, ranking[i])
                         break
                     else:
@@ -134,7 +99,7 @@ class Tournament:
                         # Want to start low, so invert the number
                         check = playerRank - rounds_remaining - i
                         if check <= len(ranking) and check != playerRank:
-                            if is_legal_pair(player, ranking[check]):
+                            if utility_functions.is_legal_pair(player, ranking[check]):
                                 self.manage_pairing(player, ranking[check])
                                 break
                             else:
@@ -167,24 +132,12 @@ class Tournament:
         return self.rank_players()[-number:]
 
 
-# TODO find bug where not everyone is playing the same number of opponents (also implement unit test)
 def run_sim_tournament(player_count, **kwargs):
     tournament = Tournament()
-    rounds = num_rounds(player_count, **kwargs)
+    rounds = utility_functions.num_rounds(player_count, **kwargs)
     tournament.gen_sim_players(player_count)
     while rounds > 0:
         tournament.almafi_pairing(rounds)
         tournament.sim_round()
         rounds -= 1
     return tournament
-
-
-def multi_sim(sim_num, path="./data_out.csv", player_count=24):
-    with open(path, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        while sim_num > 0:
-            ranking_list = run_sim_tournament(player_count).rank_players()
-            for i in range(0,len(ranking_list)):
-                player = ranking_list[i]
-                csvwriter.writerow([i,player.strength])
-            sim_num -= 1

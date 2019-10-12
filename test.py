@@ -1,8 +1,8 @@
 import unittest
 
 from playermodule import Player
-from almafi_algo import Tournament
-from almafi_algo import num_rounds
+from tournament import Tournament
+from tournament import num_rounds
 
 
 class TournamentTest(unittest.TestCase):
