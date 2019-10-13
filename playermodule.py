@@ -57,6 +57,23 @@ class Player:
             i += 1
         return made_cut/1000
 
+    # TODO: Fix bug where some permutations incorrectly return first placed player not making the cut
+    def miss_cut_permutation(self, tourney, round_num):
+        cut_count = cut_size(len(tourney.player_dict))
+
+        for i in range(0, 1000):
+            drawn_scenario = deepcopy(tourney)
+            clone = drawn_scenario.player_dict[self.id]
+            temp_round = round_num
+            while temp_round > 0:
+                clone.draw_round(drawn_scenario)
+                drawn_scenario.sim_round()
+                temp_round -= 1
+                drawn_scenario.almafi_pairing(temp_round)
+            if clone.id not in [player.id for player in drawn_scenario.cut(cut_count)]:
+                return tourney
+        return None
+
     def draw_round(self, tournament):
         for pair in tournament.pairing_list:
             if self.id in pair:

@@ -1,5 +1,6 @@
 import tournament
 
+
 def is_legal_pair(player1, player2):
     return player1.test_legal_pairing(player2) and \
         player2.test_legal_pairing(player1)
@@ -76,6 +77,7 @@ def run_sim_partial(player_count, round_stop, **kwargs):
         tourney.almafi_pairing(rounds)
         tourney.sim_round()
         rounds -= 1
+    tourney.almafi_pairing(round_stop)
     return tourney
 
 
