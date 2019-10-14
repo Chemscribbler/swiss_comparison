@@ -40,7 +40,7 @@ def num_rounds(player_count, event_type="Competitive"):
 
 
 def cut_size(player_count, event_type="Competitive"):
-    cut_num: int = 0
+    cut_num = 0
     if event_type == "Competitive":
         if player_count > 15:
             cut_num += 4
@@ -79,8 +79,3 @@ def run_sim_partial(player_count, round_stop, **kwargs):
         rounds -= 1
     tourney.almafi_pairing(round_stop)
     return tourney
-
-
-def check_id_prob(tourney, rounds_remaining):
-    for p in tourney.rank_players():
-        print("{} {} {} {}".format(p.id, p.score, p.sos, p.compute_should_id(tourney, rounds_remaining)))

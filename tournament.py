@@ -31,11 +31,12 @@ class Tournament:
         for i in range(0, number):
             corp_num = random.randint(0, 19)
             runner_num = random.randint(0, 17)
-            self.add_sim_player(chr(65+i), CORP_ID[corp_num], RUNNER_ID[runner_num], random.random())
+            self.add_sim_player(chr(65+i), CORP_ID[corp_num], RUNNER_ID[runner_num], random.normalvariate(0.5, 0.2))
 
     def game_result(self, winner_id, loser_id):
+        if loser_id > 0:
+            self.player_dict[loser_id].lose(winner_id)
         self.player_dict[winner_id].win(loser_id)
-        self.player_dict[loser_id].lose(winner_id)
 
     def close_match(self, player1, player2):
         player1.curr_opp = None
@@ -48,7 +49,15 @@ class Tournament:
 
     def sim_game(self, sim1, sim2):
         rand = random.random()
-        if rand + sim1.strength - sim2.strength > 0.5:
+
+        # If opponent is bye
+        if sim1.id < 0:
+            self.game_result(sim2.id, sim1.id)
+        elif sim2.id < 0:
+            self.game_result(sim1.id, sim2.id)
+
+        # Coin flip result (strength1 - strength2)+random then if greater/less than 0.5
+        elif rand + sim1.strength - sim2.strength > 0.5:
             self.game_result(sim1.id, sim2.id)
         else:
             self.game_result(sim2.id, sim1.id)
@@ -57,15 +66,20 @@ class Tournament:
         for i in self.player_dict:
             sos = 0
             player = self.player_dict[i]
-            for opp in player.opp_list:
-                sos += self.player_dict[opp].score
-            player.sos = sos/len(player.opp_list)
+            distinct_opp_list = []
+            for x in player.opp_list:
+                if x not in distinct_opp_list:
+                    distinct_opp_list.append(x)
+            for opp in distinct_opp_list:
+                opp_obj = self.player_dict[opp]
+                sos += opp_obj.score
+            player.sos = round(sos/len(player.opp_list)/2, 3)
         for i in self.player_dict:
             ext_sos = 0
             player = self.player_dict[i]
             for opp in player.opp_list:
                 ext_sos += self.player_dict[opp].sos
-            player.ext_sos = ext_sos/len(player.opp_list)
+            player.ext_sos = round(ext_sos/len(player.opp_list), 3)
 
     def rank_players(self):
         player_list = []
@@ -130,3 +144,18 @@ class Tournament:
 
     def cut(self, number):
         return self.rank_players()[-number:]
+
+    def check_id_prob(self, rounds_remaining):
+        for p in self.rank_players():
+            print("ID: {} Str: {} Score: {} SoS: {} Draw Odds: {}".format(p.id,
+                  round(p.strength, 3), p.score, p.sos, p.compute_should_id(self, rounds_remaining)))
+
+    def check_offers(self, rounds_remaining, **kwargs):
+        for pair in self.pairing_list:
+            p1_desire = pair[0].compute_should_id(self, rounds_remaining, **kwargs)
+            p2_desire = pair[1].compute_should_id(self, rounds_remaining, **kwargs)
+            if p1_desire > 0.85:
+                print("{} offers draw to {}".format(pair[0].id, pair[1].id))
+            if p2_desire > 0.85:
+                print("{} would accept draw from {}".format(pair[1].id, pair[0].id))
+        print("All offers completed")
