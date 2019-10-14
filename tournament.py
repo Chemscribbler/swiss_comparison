@@ -48,7 +48,7 @@ class Tournament:
         self.pairing_list = new_pairing_list
 
     def sim_game(self, sim1, sim2):
-        rand = random.random()
+        rand = random.normalvariate(0.5, 0.2)
 
         # If opponent is bye
         if sim1.id < 0:
@@ -151,6 +151,10 @@ class Tournament:
                   round(p.strength, 3), p.score, p.sos, p.compute_should_id(self, rounds_remaining)))
 
     def check_offers(self, rounds_remaining, **kwargs):
+        if len(self.pairing_list < 2):
+            print("No pairings")
+            return None
+
         for pair in self.pairing_list:
             p1_desire = pair[0].compute_should_id(self, rounds_remaining, **kwargs)
             p2_desire = pair[1].compute_should_id(self, rounds_remaining, **kwargs)
@@ -159,3 +163,8 @@ class Tournament:
             if p2_desire > 0.85:
                 print("{} would accept draw from {}".format(pair[1].id, pair[0].id))
         print("All offers completed")
+
+    def reset_pairings(self):
+        self.pairing_list = []
+        for player in self.player_dict:
+            player.curr_opp = None
